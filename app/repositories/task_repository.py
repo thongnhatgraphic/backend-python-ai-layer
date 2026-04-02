@@ -1,6 +1,3 @@
-from fastapi import HTTPException
-from datetime import datetime, timezone
-
 from sqlmodel import Session
 from sqlmodel import select
 from app.models.task_model import Task

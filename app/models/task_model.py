@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
 from sqlmodel import SQLModel, Field
+from uuid import UUID
 
 class Task(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -11,6 +12,7 @@ class Task(SQLModel, table=True):
     deadline: datetime | None = None
     created_at: datetime = Field(default_factory= lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory= lambda: datetime.now(timezone.utc))
+    # user_id: UUID = Field(foreign_key="usermodel.id")
 
 # import asyncio
 

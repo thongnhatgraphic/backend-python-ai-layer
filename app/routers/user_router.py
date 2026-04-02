@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app.database import get_session
 from app.repositories.user_repository import UserRepository
 from app.services.user_service import UserService
+from app.response_schema.user_schema import UserResponse, UserLoginResponse
 
 
 router = APIRouter()
@@ -18,29 +19,17 @@ class UserRequest(BaseModel):
     password: str
     confirm_password: str
 
-@router.post("/user/register")
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+@router.post("/user/register", response_model=UserResponse)
 async def register(
         user: UserRequest,
         userService: UserService = Depends(get_user_service)
     ):
     return userService.register(user)
 
-@router.post("/user/login")
-async def login():
-    return {
-        "message": "Login successfully",
-        "data": {
-            "username": "Nhat",
-            "password": "123456"
-        }
-    }
-
-@router.get("/user")
-async def get_user():
-    return {
-        "message": "User information",
-        "data": {
-            "username": "Nhat",
-            "password": "123456"
-        }
-    }
+@router.post("/user/login", response_model=UserLoginResponse)
+async def login(user: UserLogin, userService: UserService = Depends(get_user_service)):
+    return userService.login(user)

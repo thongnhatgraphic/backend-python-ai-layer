@@ -5,8 +5,6 @@ from contextlib import asynccontextmanager
 from app.routers.__init__ import all_routers
 
 
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 START APP---------------------")
@@ -22,5 +20,5 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 for router in all_routers:
-    app.include_router(router["router"], prefix=router["prefix"], tags=router["tags"])
+    app.include_router(router["router"], tags=router["tags"])
 

@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlmodel import Session 
 
+from app.database import get_session
 from app.response_schema.task_schema import TaskResponse
 from app.response_schema.delete_response import DeleteResponse
 from app.services.task_service import TaskService
 from app.repositories.task_repository import TaskRepository
-from app.database import get_session
+from app.dependencies.auth_dependency import get_current_user
 
 router = APIRouter()
 
@@ -20,7 +21,10 @@ class TaskRequest(BaseModel):
     progress: int
 
 @router.get("/tasks", response_model= list[TaskResponse])
-async def get_tasks(taskService: TaskService = Depends(get_task_service)):
+async def get_tasks(
+    user_id: str = Depends(get_current_user),
+    taskService: TaskService = Depends(get_task_service)
+    ):
     return taskService.get_tasks()
 
 @router.get("/task/{task_id}", response_model=TaskResponse)
