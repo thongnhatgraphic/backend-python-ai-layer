@@ -6,7 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 
 from sqlmodel import SQLModel
-from app.models import task_model, user_model
+from app.models import task_model, user_model, refresh_token_model
 
 
 target_metadata = SQLModel.metadata

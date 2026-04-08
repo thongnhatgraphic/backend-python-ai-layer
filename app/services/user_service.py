@@ -1,12 +1,19 @@
 from fastapi import HTTPException
-from app.utils.security import hash_password, verify_password
-from app.utils.auth import create_access_token
+from jose import jwt, JWTError, ExpiredSignatureError
+from datetime import datetime, timedelta, timezone
+
+from app.config import settings
 
 from app.models.user_model import UserModel
-from app.response_schema.user_schema import UserLoginResponse
+from app.repositories.user_repository import UserRepository
+
+from app.utils.security import hash_password
+from app.utils.auth import create_access_token
 
 class UserService:
-    def __init__(self, repository):
+    def __init__(self, 
+            repository: UserRepository
+        ):
         self.repository = repository
 
     def register(self, user):
@@ -30,21 +37,3 @@ class UserService:
         
         return self.repository.create(new_user)
     
-    def login(self, user):
-        username, password = user.username, user.password
-
-        user_by_name = self.repository.get_by_username(username)
-
-        if not user_by_name or not verify_password(password, user_by_name.hashed_password):
-            raise HTTPException(status_code=401, detail="Invalid credentials")
-        
-        token = create_access_token({
-            "sub": str(user_by_name.id), 
-            "username": str(user_by_name.username)
-        })
-        return UserLoginResponse(
-            id=user_by_name.id,
-            username=user_by_name.username,
-            access_token=token,
-            created_at=user_by_name.created_at
-        )

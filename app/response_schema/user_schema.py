@@ -12,4 +12,5 @@ class UserLoginResponse(SQLModel):
     id: UUID
     username: str
     access_token: str
+    refresh_token: str
     created_at: datetime

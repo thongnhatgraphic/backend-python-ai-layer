@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel
 from datetime import datetime
-
+from uuid import UUID
 
 class TaskResponse(SQLModel):
     id: int
@@ -10,4 +10,5 @@ class TaskResponse(SQLModel):
     progress: int
     priority: int | None 
     deadline: datetime | None
+    user_id: UUID
 
