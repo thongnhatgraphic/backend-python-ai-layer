@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel
 from sqlmodel import Session 
 from uuid import UUID
@@ -12,6 +12,7 @@ from app.response_schema.delete_response import DeleteResponse
 from app.services.task_service import TaskService
 from app.repositories.task_repository import TaskRepository
 from app.dependencies.auth_dependency import get_current_user
+from app.dependencies.rate_limit_dependency import rate_limitter
 
 router = APIRouter()
 
@@ -37,9 +38,9 @@ async def get_tasks(
     sort_by: str = 'created_at',
     order: str = 'desc',
     user_id: str = Depends(get_current_user),
-    taskService: TaskService = Depends(get_task_service)
+    taskService: TaskService = Depends(get_task_service),
+    _: bool | HTTPException = Depends(rate_limitter)
     ):
-    print()
     return taskService.get_tasks(user_id, 
                                  page, 
                                  limit, 
@@ -62,7 +63,8 @@ async def get_tasks_scale(
         user_id: UUID = Depends(get_current_user),
         taskService: TaskService = Depends(get_task_service)
     ):
-    return taskService.get_tasks_scale( cursor_created_at,
+    
+    return await taskService.get_tasks_scale( cursor_created_at,
                                         cursor_id,
                                         limit,
                                         status,

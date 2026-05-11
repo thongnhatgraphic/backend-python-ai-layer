@@ -13,6 +13,20 @@ class TaskService:
         self.repository = repository
         self.redis = redis
 
+    def clear_task_cached(self, user_id: UUID):
+        cached = [
+            f"tasks:{user_id}:*",
+            f"tasks_scale:{user_id}:*"
+        ]
+
+        for partern in cached:
+            list_keys = list(self.redis.scan_iter(match=partern))
+            self.redis.delete(*list_keys)
+
+    @staticmethod
+    def serialize_cursor(cursor_created_at):
+        return cursor_created_at.isoformat() if cursor_created_at else "none"
+
     def create_task(self, name, progress, user_id):
 
         task = Task(name=name, progress = progress, status="pending")
@@ -25,14 +39,12 @@ class TaskService:
         if result is None:
             raise HTTPException(status_code=500, detail="Failed to create task")
 
-        cached = self.redis.scan_iter(match=f"tasks:{user_id}:*") or self.redis.scan_iter(match=f"tasks_scale:{user_id}:*")
-
-        keys = list(self.redis.scan_iter(match=f"tasks_scale:{user_id}:*"))
-        self.redis.delete(*keys)
+        self.clear_task_cached(user_id)
 
         return result
 
-    def get_tasks(self, user_id: UUID, 
+    def get_tasks(self,
+                  user_id: UUID, 
                   page, 
                   limit, 
                   status, 
@@ -41,8 +53,12 @@ class TaskService:
                   search, 
                   sort_by, 
                   order):
-        
-        cache_key = f"tasks:{user_id}:{page}:{limit}:{status}:{priority}:{progress}:{search}:{sort_by}:{order}"
+
+        search_key = search or "none"
+        status_key = status or "all"
+        priority_key = priority or "all"
+
+        cache_key = f"tasks:{user_id}:{page}:{limit}:{status_key}:{priority_key}:{progress}:{search_key}:{sort_by}:{order}"
         
         print("\n cache key \n", cache_key)
 
@@ -64,7 +80,12 @@ class TaskService:
                                              sort_by, 
                                              order)
         
-        self.redis.set(cache_key, json.dumps(encoders.jsonable_encoder(result)), ex=300, nx=True)
+        self.redis.set(
+            cache_key,
+            json.dumps(encoders.jsonable_encoder(result)),
+            ex=300,
+            nx=True
+        )
 
         return result
         # return self.repository.get_all(user_id,
@@ -76,8 +97,6 @@ class TaskService:
         #                                sort_by, 
         #                                order)
 
-    def serialize_cursor(cursor_created_at):
-        return cursor_created_at.isoformat() if cursor_created_at else "none"
 
     async def get_tasks_scale(self, 
                         cursor_created_at, 
@@ -88,70 +107,68 @@ class TaskService:
                         search, 
                         user_id: str):
         
-        if limit < 1 or limit > 50:
-            raise HTTPException(status_code=400, message="Limit must be between 1 and 50")
-
+        if limit < 10 or limit > 100:
+            raise HTTPException(status_code=400, detail="Limit must be between 10 and 100")
+        
         search_key = search or "none"
         status_key = status or "all"
-        priority_key =  priority or "all"
+        priority_key = priority or "all"
+        cursor_created_at_key = self.serialize_cursor(cursor_created_at)
+        cursor_id_key = cursor_id or "none"
 
-        cache_key = f"tasks_scale:{user_id}:{self.serialize_cursor(cursor_created_at)}:{cursor_id}:{limit}:{status_key}:{priority_key}:{search_key}"
+        print("\n cursor_created_at_key \n", cursor_created_at_key)
+        cache_key = f"tasks_scale:{user_id}:{cursor_created_at}:{cursor_id_key}:{limit}:{status_key}:{priority_key}:{search_key}"
 
-        lock_key = f"lock:{cache_key}"
-        is_locked = self.redis.set(lock_key, "1", nx=True, ex =5)
+        lock_key = f"tasks_scale_lock:{cache_key}"
 
         cached = self.redis.get(cache_key)
-
         if cached:
-            print("Cache hit---", cached)
             return json.loads(cached)
         
+        is_locked = self.redis.set(lock_key, "1", ex=5, nx=True)
+
         if is_locked:
-            # This request enought to condition to access DB
             try:
-                result = self.repository.get_tasks_scale_raw(cursor_created_at, 
-                                                        cursor_id,
-                                                        limit, 
-                                                        status, 
-                                                        priority, 
-                                                        search, 
-                                                        user_id)
-            
-                self.redis.set(cache_key, json.dumps(encoders.jsonable_encoder(result)), ex=300, nx=True)
+                result = self.repository.get_tasks_scale_raw(
+                cursor_created_at,
+                cursor_id,
+                limit,
+                status,
+                priority,
+                search,
+                user_id
+            )
+                
+                self.redis.set(
+                    cache_key, 
+                    json.dumps(encoders.jsonable_encoder(result)),
+                    ex=300
+                )
 
                 return result
-            finally:
-                self.redis.delete(lock_key)
-        else:
-            await asyncio.sleep(0.05)
-            cached = self.redis.get(cache_key)
 
+            finally:
+                print("final run here")
+                self.redis.delete(lock_key)
+
+        else:
+            print("Cache miss")
+            await asyncio.sleep(0.05)
+
+            cached = self.redis.get(cache_key)
             if cached:
+                print("Cache hit---", cached)
                 return json.loads(cached)
             
-            # fallback
-            return self.repository.get_tasks_scale_raw(cursor_created_at, 
-                                                   cursor_id,
-                                                   limit, 
-                                                   status, 
-                                                   priority,
-                                                   search, 
-                                                   user_id)
-        
-
-        print("Hit DB")
-
-        result = self.repository.get_tasks_scale_raw(cursor_created_at, 
-                                                   cursor_id,
-                                                   limit, 
-                                                   status, 
-                                                   priority, 
-                                                   search, 
-                                                   user_id)
-        
-        self.redis.set(cache_key, json.dumps(encoders.jsonable_encoder(result)), ex=300, nx=True)
-
-        return result
+            return self.repository.get_tasks_scale_raw(
+                cursor_created_at,
+                cursor_id,
+                limit,
+                status,
+                priority,
+                search,
+                user_id
+            )
 
     def delete_task(self, task_id, user_id: UUID):
         print('\n user_id \n\n', user_id)
@@ -162,7 +179,7 @@ class TaskService:
         
         cached = self.redis.scan_iter(match=f"tasks:{user_id}:*") or self.redis.scan_iter(match=f"tasks_scale:{user_id}:*")
         
-        keys = list(self.redis.scan_iter(match=f"tasks_scale:{user_id}:*"))
+        keys = list(self.redis.scan_iter(match=f"{cached}:*"))
         self.redis.delete(*keys)
 
         return self.repository.delete_raw(task_id, user_id)
@@ -183,10 +200,7 @@ class TaskService:
         if task_updated is None:
             raise HTTPException(status_code=500, detail="Failed to update task")
 
-        cached = self.redis.scan_iter(match=f"tasks:{user_id}:*") or self.redis.scan_iter(match=f"tasks_scale:{user_id}:*")
-
-        keys = list(self.redis.scan_iter(match=f"tasks_scale:{user_id}:*"))
-        self.redis.delete(*keys)
+        self.clear_task_cached(user_id)
 
         return task_updated
 
@@ -215,10 +229,7 @@ class TaskService:
         if task_updated is None:
             raise HTTPException(status_code=500, detail="Failed to update task")
         
-        cached = self.redis.scan_iter(match=f"tasks:{user_id}:*") or self.redis.scan_iter(match=f"tasks_scale:{user_id}:*")
-
-        keys = list(self.redis.scan_iter(match=f"tasks_scale:{user_id}:*"))
-        self.redis.delete(*keys)
+        self.clear_task_cached(user_id)
 
         return task_updated
     
