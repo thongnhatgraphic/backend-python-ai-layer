@@ -1,0 +1,206 @@
+1. Query cần index? why?
+
+JOIN:
+o.user_id = u.id
+oi.order_id = o.id
+
+DB phải compare từng row
+
+2. Cách tạo Index:
+
+🔥 MUST HAVE:
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+CREATE INDEX idx_order_items_order_id on order_items(order_id)
+
+Column nào dùng trong:
+- JOIN
+- WHERE
+- ORDER BY
+→ NÊN có index
+
+3. Cách kiểm tra PERFORMANCE
+
+EXPLAIN ANALYZE;
+
+</> SQL
+EXPLAIN ANALYZE
+SELECT * FROM orders WHERE user_id = '...';
+
+❌ Chưa có index
+EXPLAIN ANALYZE
+SELECT * FROM orders WHERE user_id = 'fafdb181-ed54...';
+
+✅ Sau khi tạo index
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+
+4. Thứ tự index
+(user_id, created_at) # (created_at, user_id)
+Column filter chính -> Đứng trước.
+
+. ANTI-PATTERN (RẤT QUAN TRỌNG)
+❌ Sai:
+WHERE LOWER(username) = 'abc'
+👉 index không dùng được
+
+❌ Sai:
+WHERE DATE(created_at) = '2026-04-08'
+👉 phá index
+
+✅ Đúng:
+WHERE created_at >= '2026-04-08'
+  AND created_at < '2026-04-09'
+
+5. TƯ DUY PRO (RẤT QUAN TRỌNG)
+❗ Không phải index càng nhiều càng tốt
+🚨 Vấn đề:
+INSERT / UPDATE / DELETE sẽ chậm hơn
+
+
+
+
+
+
+Task 1:
+CREATE INDEX idx_orders_user_id ON orders(user_id);
+CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+
+Task2:
+EXPLAIN ANALYZE select * from orders where user_id = '0e5dc195-8ace-43ec-9fbc-3c68eebcbbdf';
+                                                          QUERY PLAN
+-------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using idx_orders_user_id on orders  (cost=0.14..8.15 rows=1 width=52) (actual time=0.220..0.223 rows=3.00 loops=1)
+   Index Cond: (user_id = '0e5dc195-8ace-43ec-9fbc-3c68eebcbbdf'::uuid)
+   Index Searches: 1
+   Buffers: shared hit=1 read=1
+ Planning Time: 0.232 ms
+ Execution Time: 0.626 ms
+(6 rows)
+
+Task3:
+Select * from orders 
+where created_at >= '2026-04-08' 
+and created_at < '2026-04-09';
+
+🧩 TASK 4 (HARD)
+👉 Tối ưu query này:
+SELECT 
+u.username,
+SUM(oi.quantity * oi.price)
+FROM users u
+JOIN orders o ON u.id = o.user_id
+JOIN order_items oi ON oi.order_id = o.id
+WHERE o.created_at >= '2026-04-08'
+GROUP BY u.username;
+
+
+------> Re-write;
+Solution 1:
+Select
+u.username,
+sum(oi.quantity * oi.price)
+From users u
+join (
+    select * 
+    from orders
+    where created_at >= '2026-04-08'
+) o  On u.id = o.user_id
+join order_items oi On oi.order_id = o.id
+GROUP by u.id, u.username;
+
+Solution 2:
+With filtered_orders as (
+    select id, user_id
+    from orders 
+    where created_at > '2026-04-08'
+)
+Select 
+u.username,
+sum(oi.quantity * oi.price)
+from filtered_orders o
+
+
+
+Bài Tập 1
+
+Step 1: Chạy query
+
+EXPLAIN ANALYZE
+SELECT * FROM orders
+WHERE user_id = '0e5dc195-8ace-43ec-9fbc-3c68eebcbbdf';
+                                                   QUERY PLAN
+----------------------------------------------------------------------------------------------------------------
+ Seq Scan on orders  (cost=0.00..2404.25 rows=10104 width=42) (actual time=0.015..10.535 rows=10003.00 loops=1)
+   Disabled: true
+   Filter: (user_id = '0e5dc195-8ace-43ec-9fbc-3c68eebcbbdf'::uuid)
+   Rows Removed by Filter: 100017
+   Buffers: shared hit=1029
+ Planning:
+   Buffers: shared hit=5 dirtied=1
+ Planning Time: 0.248 ms
+ Execution Time: 10.943 ms
+(9 rows)
+
+
+1. Seq Scan
+2. Execution time: 10.943 ms
+
+Step2:
+EXPLAIN ANALYZE
+SELECT * FROM orders
+WHERE user_id = '0e5dc195-8ace-43ec-9fbc-3c68eebcbbdf';
+                                                               QUERY PLAN
+----------------------------------------------------------------------------------------------------------------------------------------
+ Bitmap Heap Scan on orders  (cost=114.60..1269.90 rows=10104 width=42) (actual time=1.052..7.233 rows=10003.00 loops=1)
+   Recheck Cond: (user_id = '0e5dc195-8ace-43ec-9fbc-3c68eebcbbdf'::uuid)
+   Heap Blocks: exact=1029
+   Buffers: shared hit=1029 read=10
+   ->  Bitmap Index Scan on idx_orders_user_id  (cost=0.00..112.07 rows=10104 width=0) (actual time=0.880..0.881 rows=10003.00 loops=1)
+         Index Cond: (user_id = '0e5dc195-8ace-43ec-9fbc-3c68eebcbbdf'::uuid)
+         Index Searches: 1
+         Buffers: shared read=10
+ Planning Time: 0.134 ms
+ Execution Time: 7.870 ms
+(10 rows)
+
+2. Index scan
+3. Execution Time: 7.870 ms
+
+Bài Tập 2: Index cho Where + Range:
+
+
+Bài tập 3:taskdb=# EXPLAIN ANALYZE
+SELECT *
+FROM orders o
+JOIN order_items oi ON o.id = oi.order_id;
+                                                           QUERY PLAN
+---------------------------------------------------------------------------------------------------------------------------------
+ Nested Loop  (cost=0.29..100.84 rows=12 width=78) (actual time=0.069..0.101 rows=12.00 loops=1)
+   Buffers: shared hit=37
+   ->  Seq Scan on order_items oi  (cost=0.00..1.12 rows=12 width=36) (actual time=0.038..0.041 rows=12.00 loops=1)
+         Disabled: true
+         Buffers: shared hit=1
+   ->  Index Scan using orders_pkey on orders o  (cost=0.29..8.31 rows=1 width=42) (actual time=0.004..0.004 rows=1.00 loops=12)
+         Index Cond: (id = oi.order_id)
+         Index Searches: 12
+         Buffers: shared hit=36
+ Planning Time: 0.285 ms
+ Execution Time: 0.159 ms
+(11 rows)
+
+Có phải ta phải gõ lệnh 
+Create index idx_order_items_order_id on order_items(order_id);
+
+Bài tập 4:
+Vì WHERE Date(created_at) = '2026-04-08' Theo lý thuyết bạn đã dạy thì nó phá index nhưng mình không hiểu tại sao
+
+EXPLAIN ANALYZE
+SELECT * FROM orders
+WHERE created_at >= '2026-04-08'
+  AND created_at < '2026-04-09';
+
+Bài Tập 5:
+taskdb=# create index idx_orders_user_id on orders(user_id);
+CREATE INDEX
+taskdb=# create index idx_orders_created_at on orders(created_at);
+CREATE INDEX
+

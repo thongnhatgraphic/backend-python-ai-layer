@@ -1,0 +1,97 @@
+1-------data consistency: Nhất quán dữ liệu, Thống nhất dữ liệu
+
+data consistency, data consistency, data consistency
+
+2------- Constraint: Ràng buộc
+
+- Constraint, Constraint, Constraint, Constraint, Constraint
+- Cóntraint, Constraint, Constraint
+
+3------- Revenue: Doanh Thu
+
+Revenue, Revenue, revenue
+
+4------- ambiguity: em bir use ơ tì: Sự mơ hồ
+
+ambiguity, ambiguity, ambiguity, ambiguity
+
+5------- Influence: Influence someone or Influence something: Gây ảnh hưởng
+
+Influence, Influence, Influence, Influence, Influence
+
+6------- COALESCE: Hợp nhất, liên kết  ( Ko a leshi`)
+
+- coalesce, coalesce, coalesce, coalesce, coalesce , coalesce, coalesce, coalesce, coalesce, coalesce
+
+7------- AGGREGATE: Tổng hợp
+
+- Aggregate, aggregate, aggregate, aggregate, aggregate
+
+8------- PARTITION: Phân vùng
+
+Partition, partition, partittion, partition, partition, partition
+
+9------- EXPLAIN ANALYZE: Giải thích, Phân thích
+
+- Explain, explain, analyze, 
+
+10------ Composite index: Chỉ mục tổng hợp
+
+- Composite index, composite index
+
+11------ complexity: Độ phức tạp
+
+Complexity, complexity, Complexity
+
+12------ cache stampede: Bộ nhớ ẩn, Bộ đệm ẩn
+
+13------ stampede: dẫm đạp
+
+14------ acquire: Giành được
+
+15------ acquire lock: Giành được
+
+
+SELECT *
+FROM orders
+WHERE user_id = 'A'
+AND status = 'completed'
+AND created_at >= '2026-04-01'
+ORDER BY created_at DESC
+LIMIT 20;
+
+Bài A: Create index idx_orders_user_status_by_created_at_desc on orders(user_id, status, create_task desc);
+DN sẽ đi như mô hình này
+Đi vào A sau đó vào status completed lấy 10 rows đã được sorted theo created_at sẵn
+A : completed - created_at: [ '2026-04-01', ... ],
+    pending - created_at: [ '2026-04-01', ....],
+    cancelled - created_at: [ '2026-04-01', ....]
+
+Bài B: Nên có index vì nó sẽ nhảy vào user_id A và bỏ qua user_id khác và lấy các rows thuộc user_id A đã được sorted theo DESC sẵn;
+
+Bài C: Không nên. Filter này trả về QUÁ NHIỀU rows Index chỉ ngon khi filter ra ÍT dữ liệu
+
+Bài D: create index idx_orders_user_id_created_at on orders(user_id, created_at desc);
+
+
+Bài E: 
+1.create index idx_orders_status_created_at on orders(status, created_at desc);
+2. Nếu đặt created trước thì sẽ có nhiều created_at cùng giá trị
+ví dụ: created_at   2026-04-01  : 'completed'
+                    2026-04-02  : 'completed'
+    Không tốt. Mình nghĩ nó sẽ thế
+3. DB nên đi theo
+    status: 'completed' : [ '2026-04-01', '2026-04-02'],
+            'pending'   : [ '2026-04-01', '2026-04-02']
+
+
+Bài F:
+1. (user_id, status, created_at desc, amount desc);
+2.
+    A   - completed - 2026-04-30 - [ 600k, 500k, ... 100k]
+                    | 2026-04-29 - [ 500k, 400k, ... 50k]
+
+        | pending - - 2026-04-30 - [ 600k, 500k, ... 100k]
+                    | 2026-04-29 - [ 500k, 400k, ... 50k]
+
+3. Mình nghĩ cột amount k nên đưa vào index

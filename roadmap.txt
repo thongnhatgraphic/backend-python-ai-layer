@@ -1,0 +1,36 @@
+🟢 LEVEL 1 — CORE PYTHON
+Loop, function, class, list, dict
+
+👉 ✅ DONE
+
+🟢 LEVEL 2 — DATA & NUMPY
+Array, filter, mean, vector
+
+👉 ✅ DONE
+
+🟡 LEVEL 3 — WEB BACKEND
+FastAPI + SQLModel + CRUD
+
+👉 ✅ DONE
+
+🟡 LEVEL 4 — CLEAN ARCHITECTURE
+Repository pattern
+Service layer
+Dependency injection
+
+👉 ✅ DONE
+
+🟠 LEVEL 5 — AUTH SYSTEM
+JWT
+Login/Register
+Protect API
+
+👉 ✅ DONE
+
+🔴 LEVEL 6 — PRODUCTION AUTH (BẠN VỪA XONG)
+Refresh token
+Store DB
+Revoke
+Logout
+
+👉 ✅ DONE (🔥 cực kỳ quan trọng)
