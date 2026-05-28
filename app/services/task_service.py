@@ -21,10 +21,13 @@ class TaskService:
 
         for partern in cached:
             list_keys = list(self.redis.scan_iter(match=partern))
+            if not list_keys:
+                continue
             self.redis.delete(*list_keys)
 
     @staticmethod
     def serialize_cursor(cursor_created_at):
+        
         return cursor_created_at.isoformat() if cursor_created_at else "none"
 
     def create_task(self, name, progress, user_id):

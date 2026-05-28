@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_DB: int
     REDIS_PASSWORD: str
+    RABBITMQ_URL: str
     model_config = ConfigDict(env_file=".env")
 
 settings = Settings()

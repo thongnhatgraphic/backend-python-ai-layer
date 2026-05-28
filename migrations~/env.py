@@ -6,8 +6,14 @@ from sqlalchemy import pool
 from alembic import context
 
 from sqlmodel import SQLModel
-from app.models import task_model, user_model, refresh_token_model
-
+from app.models import (
+    task_model,
+    refresh_token_model,
+    user_model,
+    auditlog_model,
+    analytic_model,
+    notification_model,
+)
 
 target_metadata = SQLModel.metadata
 
@@ -70,9 +76,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
