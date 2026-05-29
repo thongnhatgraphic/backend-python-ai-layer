@@ -7,7 +7,10 @@ def publish_task_event(event_type: str, data: dict):
 
     payload = {
         "event": event_type,
-        "data": data
+        "data": {
+                "title": event_type,
+                **data
+            }
     }
     
     print("\n\n\n\n payload is \n\n\n\n", payload)

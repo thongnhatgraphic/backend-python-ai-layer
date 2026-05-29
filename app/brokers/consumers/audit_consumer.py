@@ -14,7 +14,7 @@ channel = connection.channel()
 
 channel.exchange_declare(exchange="task_events", exchange_type="fanout", durable=True)
 
-result = channel.queue_declare(queue="", exclusive=True)
+result = channel.queue_declare(queue="audit_queue", durable=True)
 
 queue_name = result.method.queue
 

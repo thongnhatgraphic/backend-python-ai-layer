@@ -37,18 +37,18 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
-@router.post("/user/register", response_model=UserResponse)
+@router.post("/register", response_model=UserResponse)
 async def register(
         user: UserRequest,
         userService: UserService = Depends(get_user_service)
     ):
     return userService.register(user)
 
-@router.post("/user/login", response_model=UserLoginResponse)
+@router.post("/login", response_model=UserLoginResponse)
 async def login(user: UserLogin, authService: AuthService = Depends(get_auth_service)):
     return authService.login(user)
 
-@router.post("/user/refresh")
+@router.post("/refresh")
 async def refresh_access_token(
     body: RefreshRequest,
     authService: AuthService = Depends(get_auth_service)
@@ -56,6 +56,6 @@ async def refresh_access_token(
 
     return authService.refresh_access_token(body.refresh_token)
 
-@router.post("/user/logout")
+@router.post("/logout")
 async def logout(body : LogoutRequest, authService: AuthService = Depends(get_auth_service)):
     return authService.logout(body.refresh_token)
