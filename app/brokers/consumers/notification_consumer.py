@@ -8,6 +8,7 @@ from app.config import settings
 
 from app.models.notification_model import NotificationModel
 from app.websocket.connection_manager import manager
+from app.core.redis import redis_client
 
 connection = pika.BlockingConnection(
         pika.URLParameters(settings.RABBITMQ_URL)
@@ -58,8 +59,19 @@ def callback(ch, method, properties, body):
             session.exec(statement_insert)
             session.commit()
         print(
-            "\nNotification saved"
+            "\n\n\n\nNotification saved \n\n\n", data, "\n\n\n Notification saved \n\n\n"
         )
+
+        redis_client.publish(
+            f'notification:{data["user_id"]}', 
+            json.dumps({**data })
+        )
+
+        print(
+            "Published redis channel:",
+            f"notification:{data['user_id']}"
+        )
+
         ch.basic_ack(
             delivery_tag=method.delivery_tag
         )

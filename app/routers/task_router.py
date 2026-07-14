@@ -8,7 +8,6 @@ import redis
 from app.dependencies.redis_dependency import get_redis_client
 from app.database import get_session
 from app.response_schema.task_schema import TaskResponse, TaskPaginationResponse
-from app.response_schema.delete_response import DeleteResponse
 from app.services.task_service import TaskService
 from app.repositories.task_repository import TaskRepository
 from app.dependencies.auth_dependency import get_current_user

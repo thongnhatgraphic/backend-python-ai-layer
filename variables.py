@@ -3,18 +3,29 @@ age = 20
 price = 10.5
 is_student = True
 
+import random
+import numpy as np
 
+# random list with 500 elements with value in range 0 -> 4
+# and each element in list can be repeated
 
+list_random = random.randint(0, 4)
+
+print("list_random", list_random)
+
+is_result = "notification:d6a88e15-b785-4405-885a-126a615f8f8b".startswith(
+    "notification"
+)
 # # 1.1
-
-# a = { 
-#         "filter": { 
-#             "status": "done" 
-#         } 
+print("is_result", is_result)
+# a = {
+#         "filter": {
+#             "status": "done"
+#         }
 #     }
 
-# b = { 
-#         "filter": { "priority": "high" } 
+# b = {
+#         "filter": { "priority": "high" }
 #     }
 
 # print("a", { **a })
@@ -103,7 +114,7 @@ is_student = True
 #     {"name": "B", "status": "pending"}
 # ]
 
-# tasks_done = [ task for task in tasks if task["status"] == "done"] 
+# tasks_done = [ task for task in tasks if task["status"] == "done"]
 
 # print("tasks_done", tasks_done)
 
@@ -117,21 +128,24 @@ is_student = True
 
 a = {"filter": {"status": "done"}}
 b = {"filter": {"priority": "high"}}
+
+
 def deep_merge(a, b):
     result = a.copy()
-    print('result', result)
-    
+    print("result", result)
+
     for key, value in b.items():
         if key in result and isinstance(result[key], dict):
 
-            print('result[key]', result[key])
-            print('result[key]', value)
+            print("result[key]", result[key])
+            print("result[key]", value)
             result[key] = deep_merge(result[key], value)
         else:
             result[key] = value
 
-    
     return result
+
+
 deep_merge(a, b)
 # print(
 #     deep_merge(a, b)

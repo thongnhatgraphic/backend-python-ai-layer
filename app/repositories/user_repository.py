@@ -1,6 +1,7 @@
 from app.models.user_model import UserModel
 from sqlmodel import Session, select
 from uuid import UUID
+from app.core.redis import redis_client
 
 class UserRepository:
     def __init__(self, session : Session):
@@ -27,4 +28,21 @@ class UserRepository:
             select(UserModel)
             .where(UserModel.id == id)
         ).first()
+    
+    def get_presence(self, user_id: UUID): 
+        online = redis_client.get(f"online:user:{user_id}")
 
+        if online :
+            return {
+                "is_online": True,
+                "connection": int(online),
+                "last_seen": None,
+            }
+        
+        last_seen = redis_client.get(f"last_seen:user:{user_id}")
+
+        return {
+            "is_online": False,
+            "connection": None,
+            "last_seen": last_seen
+        }

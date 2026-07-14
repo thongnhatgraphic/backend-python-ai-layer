@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 from pydantic import BaseModel
+from uuid import UUID
 
 from app.database import get_session
 from app.repositories.user_repository import UserRepository
@@ -59,3 +60,7 @@ async def refresh_access_token(
 @router.post("/logout")
 async def logout(body : LogoutRequest, authService: AuthService = Depends(get_auth_service)):
     return authService.logout(body.refresh_token)
+
+@router.get("/{user_id}/presence")
+async def get_presence(user_id: UUID, authService: AuthService = Depends(get_auth_service)):
+    return authService.get_presence(user_id)

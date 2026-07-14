@@ -1,0 +1,17 @@
+| Feature    | Điều kiện | Điểm |
+| ---------- | --------- | ---: |
+| Experience | ≥10       |  +30 | 30
+| Experience | 5-9       |  +20 |
+| Experience | 2-4       |  +10 |
+| Python     | ≥95       |  +20 | 20
+| Python     | 85-94     |  +15 |
+| Python     | 70-84     |  +5  |
+| Projects   | >=12      |  +15 |  15
+| Projects   | 8-11      |  +8  |
+| Projects   | 5-7       |  +5  |
+| Docker     | 1         |  +5  | 70
+| Redis      | 1         |  +5  |   75
+| RabbitMQ   | 1         |  +5  | 80
+| AI         | 1         |  +10 | 90
+| English    | >=800     |  +10 | 
+| English    | 600-799   |  +5  |  
