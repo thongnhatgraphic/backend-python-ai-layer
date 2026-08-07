@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from app.routers.__init__ import all_routers
 from app.services.redis_listener import redis_listener
 
+
 # life cycle of app. Before app run fastAPI will be execute create_db first,
 # and fastAPI will be execute shutdown_db or do something else before shutdown
 @asynccontextmanager
