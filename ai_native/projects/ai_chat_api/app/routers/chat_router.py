@@ -1,5 +1,5 @@
+from uuid import UUID, uuid4
 from fastapi import APIRouter, Depends
-from ollama import Client
 
 from app.schemas.chat_request import ChatRequest
 from app.schemas.chat_response import ChatResponse
@@ -10,8 +10,9 @@ from app.dependencies.memory_extractor_dependency import get_memory_extractor
 from app.dependencies.memory_store_dependency import get_memory_store
 from app.dependencies.memory_scorer_dependency import get_memory_scorer
 from app.dependencies.memory_evolution_dependency import get_memory_evolution
+from app.dependencies.reranker_dependency import get_reranker_dependency
 
-# from app.dependencies.embedding_dependency import get_embedding_dependency
+from app.dependencies.embedding_dependency import get_embedding_dependency
 from app.services.ollama_service import OllamaService
 from app.services.context_builder import ContextBuilder
 from app.services.conversation_memory import ConversationMemory
@@ -21,7 +22,7 @@ from app.services.memory_store import MemoryStore
 from app.services.memory_scorer import MemoryScorer
 from app.services.memory_evolution import MemoryEvolution
 from app.services.embedding_service import EmbeddingService
-from uuid import UUID, uuid4
+from app.services.reranker_service import RerankerService
 
 router = APIRouter()
 
@@ -34,7 +35,8 @@ def get_chat_service(
     memory_store: MemoryStore = Depends(get_memory_store),
     memory_scorer: MemoryScorer = Depends(get_memory_scorer),
     memory_evolution: MemoryEvolution = Depends(get_memory_evolution),
-    # embedding_model: EmbeddingService = Depends(get_embedding_dependency),
+    embedding_service: EmbeddingService = Depends(get_embedding_dependency),
+    reranker_service: RerankerService = Depends(get_reranker_dependency),
 ) -> ChatService:
 
     chat_service = ChatService(
@@ -45,7 +47,8 @@ def get_chat_service(
         memory_store=memory_store,
         memory_scorer=memory_scorer,
         memory_evolution=memory_evolution,
-        # embedding_model=embedding_model,
+        embedding_service=embedding_service,
+        reranker_service=reranker_service,
     )
 
     return chat_service

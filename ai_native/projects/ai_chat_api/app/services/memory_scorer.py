@@ -1,7 +1,8 @@
 import json
 from app.services.ollama_service import OllamaService
-from app.schemas.memory_score_schema import MemoryScoreList
+from app.schemas.memory_score_schema import MemoryScoreList, MemoryScore
 from app.schemas.memory_schema import Memory
+from app.schemas.memory_candidate_schema import MemoryCandidate
 from app.prompts.memory_score_prompt import build_memory_score_prompt
 
 
@@ -24,28 +25,49 @@ class MemoryScorer:
 
     def _format_memories(
         self,
-        memories: list[Memory],
+        memories: list[MemoryCandidate],
     ) -> str:
-        return json.dumps(
-            [memory.model_dump() for memory in memories], ensure_ascii=False, indent=2
-        )
+        # for index, score in enumerate(result.scores):
+        #     candidate = memories[index]
+        formatted = [
+            {
+                "candidate_index": index,
+                "content": memory.content,
+                "semantics": memory.semantics.model_dump(),
+            }
+            for index, memory in enumerate(memories)
+        ]
+        return json.dumps(formatted, ensure_ascii=False, indent=2)
 
-    def score(
+    def _validate_scores(
         self,
-        user_message: str,
-        assistant_message: str,
-        memories: list[Memory],
-    ) -> MemoryScoreList:
-        if not memories:
-            return MemoryScoreList(memories=[])
+        scores: MemoryScoreList,
+        memories: list[MemoryCandidate],
+    ) -> None:
+        if len(scores.memories) != len(memories):
+            raise ValueError(
+                "Scorer must return exactly one score "
+                "for each candidate. "
+                f"Expected count={len(memories)}, "
+                f"actual count={len(scores.memories)}"
+            )
 
-        formatted_memories = self._format_memories(memories)
-        conversation_format = self._build_conversation(user_message, assistant_message)
+    def _score_candidate(
+        self,
+        conversation_format: str,
+        candidate: MemoryCandidate,
+    ) -> MemoryScore:
 
         prompt = build_memory_score_prompt(
             conversation_format=conversation_format,
-            memories_extrator_format=formatted_memories,
+            candidate_content=candidate.content,
+            candidate_semantics=json.dumps(
+                candidate.semantics.model_dump(),
+                ensure_ascii=False,
+                indent=2,
+            ),
         )
+
         messages = [
             {
                 "role": "system",
@@ -53,11 +75,40 @@ class MemoryScorer:
             }
         ]
 
-        memory_scores = self.ollama_service.generate_structured(
+        return self.ollama_service.generate_structured(
             messages=messages,
-            response_model=MemoryScoreList,
+            response_model=MemoryScore,
         )
 
-        print("\n\n\n memory_scores \n\n\n", memory_scores)
+    def score(
+        self,
+        user_message: str,
+        assistant_message: str,
+        memories: list[MemoryCandidate],
+    ) -> list[MemoryScore]:
+        if not memories:
+            return []
 
-        return memory_scores
+        formatted_memories = self._format_memories(memories)
+        print("\n formatted_memories: \n", formatted_memories)
+
+        conversation_format = self._build_conversation(
+            user_message,
+            assistant_message,
+        )
+        print("\n conversation_format: \n", conversation_format)
+
+        scores: list[MemoryScore] = []
+
+        for candidate in memories:
+            score = self._score_candidate(
+                conversation_format=conversation_format,
+                candidate=candidate,
+            )
+
+            print("\n score: \n", score)
+            scores.append(score)
+
+        print("\n scores: \n", scores)
+
+        return scores

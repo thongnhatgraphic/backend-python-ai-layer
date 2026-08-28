@@ -12,4 +12,5 @@ class MemoryAction(str, Enum):
 class MemoryDecision(BaseModel):
     action: MemoryAction
     candidate_index: int | None = None
+    resulting_content: str | None = None
     reason: str

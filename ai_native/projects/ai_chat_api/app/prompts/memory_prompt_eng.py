@@ -27,19 +27,88 @@ Ignore:
 - Questions
 - Assistant responses
 
-Return ONLY a JSON array.
+For every memory, also classify its semantics.
+
+SEMANTIC RULES:
+category: 
+- A broad semantic category.
+- Use lowercase snake_case.
+- Do not invent overly specific categories when a broader category is sufficient.
+- Examples:
+  identity
+  learning
+  career
+  interest
+  preference
+  location
+  relationship
+  pet
+  project
+  skill
+  ...
+
+memory_key:
+- The semantic slot represented by the memory.
+- Use lowercase snake_case.
+- Examples:
+  name
+  nickname
+  focus
+  goal
+  hobby
+  language
+  profession
+  residence
+  ...
+
+  
+cardinality:
+- "single" if only one current value should normally exist.
+- "multiple" if multiple values can coexist.
+
+temporal_behavior:
+- "current" for current state or current information.
+- "historical" for information about the past.
+- "event" for a specific event.
+
+IMPORTANT:
+If the user changes a current state, represent the NEW current state.
+
+Example:
+User:
+"I paused learning Python and shifted my focus to Java."
+
+Output memory:
+"User is currently focused on learning Java."
+
+Semantics:
+category = "learning"
+memory_key = "focus"
+cardinality = "single"
+temporal_behavior = "current"
+
+
+Return ONLY JSON.
 
 Schema:
-
-[
-    {{
-        "content": "<memory>"
-    }}
-]
+{{
+    "memories": [
+        {{
+            "content": "<memory>",
+            "semantics": {{
+                "category": "<category>",
+                "memory_key": "<memory_key>",
+                "cardinality": "single | multiple",
+                "temporal_behavior": "current | historical | event"
+            }}
+        }}
+    ]
+}}
 
 If there is nothing worth remembering, return exactly:
-
-[]
+{{
+    "memories": []
+}}
 
 Do not output markdown.
 Do not explain.

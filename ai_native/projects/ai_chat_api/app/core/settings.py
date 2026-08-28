@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     MAX_RETRIEVAL_MEMORIES: int
     MAX_SUMMARIZE_MESSAGES: int
     OLLAMA_EMBEDDING_MODEL: str
+    VECTOR_SEARCH_K: int
+    RERANKER_LIMIT: int
+    RERANKER_THRESHOLD: float
 
     model_config = ConfigDict(env_file=".env", extra="ignore")
 

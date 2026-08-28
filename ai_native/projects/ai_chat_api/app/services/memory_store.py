@@ -1,6 +1,8 @@
 from uuid import UUID
 from app.schemas.memory_schema import Memory
+from app.schemas.memory_search_schema import MemorySearchResult
 from app.repositories.memory_repository import MemoryRepository
+from uuid import uuid4
 
 
 # MemoryStore chịu trách nhiệm truy xuất (retrieve) long-term memory phù hợp với một truy vấn.
@@ -12,21 +14,31 @@ class MemoryStore:
         if not memories:
             return
 
-        unique_contents = set()
-        filtered_memories = []
-        for memory in memories:
-
-            if memory.content in unique_contents:
-                continue
-
-            unique_contents.add(memory.content)
-            filtered_memories.append(memory)
-
-        print("filtered_memories", filtered_memories)
+        memories = [
+            memory.model_copy(
+                update={
+                    "id": memory.id or uuid4(),
+                }
+            )
+            for memory in memories
+        ]
 
         self.memory_repository.save(
             user_id,
-            filtered_memories,
+            memories,
+        )
+
+    def update(
+        self,
+        user_id: UUID,
+        memories: list[Memory],
+    ):
+        if not memories:
+            return
+
+        self.memory_repository.update(
+            user_id,
+            memories,
         )
 
     def get_by_user_id(self, user_id: UUID) -> list[Memory]:
@@ -42,3 +54,8 @@ class MemoryStore:
         result = self.memory_repository.search(user_id, query, limit)
 
         return result
+
+    def semantic_search(
+        self, user_id: UUID, embedding: list[float], limit: int = 5
+    ) -> list[MemorySearchResult]:
+        return self.memory_repository.semantic_search(user_id, embedding, limit)

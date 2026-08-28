@@ -101,7 +101,8 @@
 import json
 
 from app.services.ollama_service import OllamaService
-from app.schemas.memory_schema import Memory, MemoryList
+from app.schemas.memory_schema import MemoryList
+from app.schemas.memory_candidate_schema import MemoryCandidate
 from app.prompts.memory_prompt_eng import build_memory_prompt
 from pydantic import ValidationError
 
@@ -117,7 +118,9 @@ class MemoryExtractor:
     ) -> str:
         return f"User: {user_message}\nAssistant: {assistant_message}"
 
-    def extract_v2(self, user_message: str, assistant_message: str) -> list[Memory]:
+    def extract_v2(
+        self, user_message: str, assistant_message: str
+    ) -> list[MemoryCandidate]:
         conversation = self._build_conversation_v2(user_message, assistant_message)
         messages = [
             {

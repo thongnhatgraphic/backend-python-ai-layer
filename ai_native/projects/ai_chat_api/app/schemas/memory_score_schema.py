@@ -1,9 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class MemoryScore(BaseModel):
-    content: str
-    score: float
+    score: float = Field(ge=0.0, le=1.0)
 
 
 class MemoryScoreList(BaseModel):
