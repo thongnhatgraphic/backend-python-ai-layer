@@ -1,36 +1,45 @@
 from app.schemas.memory_decision_schema import MemoryDecision, MemoryAction
 import json
+from collections import Counter
 
-print("i am learning java".strip().casefold())
+relevant_ids = [2]
 
+dense_ids = [1, 2, 3, 5, 6]
 
-object_action = {
-    MemoryAction.DUPLICATE,
-    MemoryAction.UPDATE,
-    MemoryAction.MERGE,
+dense_hit = bool(set(dense_ids) & set(relevant_ids))
+print(dense_hit)
+
+memories = {
+    "1": {"31715818"},
+    "3": {"14717500"},
+    "5": {"13734012"},
+    "13": {"1606628"},
+    "36": {"11705328", "5152028"},
+    "42": {"18174210"},
+    "48": {"13734012"},
+    "49": {"5953485"},
+    "50": {"12580014"},
+    "51": {"45638119"},
+    "53": {"45638119"},
+    "54": {"49556906"},
+    "56": {"4709641"},
+    "57": {"4709641"},
+    "70": {"4414547", "5956380"},
+    "72": {"6076903"},
+    "75": {"4387784"},
+    "130": {"27768226"},
+    "132": {"7975937"},
+    "133": {"6969753", "17934082", "38485364", "16280642", "12640810"},
+    "137": {"26016929"},
+    "141": {"14437255", "6955746"},
+    "142": {"10582939"},
+    "143": {"10582939"},
 }
 
-# access value of object_action
-allowed_actions = set(MemoryAction)
-print(allowed_actions)
+result = Counter(len(docs) for docs in memories.values())
 
-allowed_action_names = {action.value.upper() for action in allowed_actions}
-# Access attribute of allowed_actions
-print("----", allowed_action_names)
-print("----", sorted(allowed_action_names))
-
-
-scores = {
-    "memories": [
-        {"candidate_index": 0, "score": 0.9},
-        {"candidate_index": 1, "score": 0.8},
-        {"candidate_index": 2, "score": 0.7},
-        {"candidate_index": 3, "score": 0.6},
-        {"candidate_index": 4, "score": 0.6},
-    ]
-}
-
-actual_indexes = {item["candidate_index"] for item in scores["memories"]}
+# print("----------", scores["memories"][:5])
+# actual_indexes = {item["candidate_index"] for item in scores["memories"]}
 # from app.tests.evaluation.reranker_eval_dataset import (
 #     EVALUATION_DATASET,
 # )

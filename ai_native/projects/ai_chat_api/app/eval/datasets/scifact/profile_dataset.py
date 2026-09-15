@@ -48,8 +48,6 @@ def main():
 
     relevant_doc_ids = {doc_id for docs in qrels.values() for doc_id in docs}
 
-    print("Relevant documents in qrels:", len(relevant_doc_ids))
-
     missing_docs = relevant_doc_ids - corpus_ids
     missing_queries = set(qrels) - query_ids
 
@@ -57,7 +55,6 @@ def main():
     print("Missing query ids:", len(missing_queries))
 
     distribution = Counter(len(docs) for docs in qrels.values())
-
     print("\nRelevant documents per query:")
     for count, frequency in sorted(distribution.items()):
         print(f"{count} relevant docs -> " f"{frequency} queries")

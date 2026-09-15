@@ -24,9 +24,54 @@
 
 4. Context Engineering
 Học ở mức thực dụng:
-    Context selection
+    Context selection                       
+                                        user_message
+                                            │
+                                            ▼
+                                        ContextPlanner
+                                            │
+                                        ContextPlan
+                                            │
+                            ┌────────────────┼────────────────┐
+                            ▼                ▼                ▼
+                        Memory             RAG            History
+                        decision          decision         decision
+                            │                │                │
+                            │           required?            │
+                            │                │               │
+                            │              YES               │
+                            │                ↓               │
+                            │         Retrieve/Rerank        │
+                            │                ↓               │
+                            │              Gate              │
+                            │                ↓               │
+                            └────────────────┼───────────────┘
+                                             ▼
+                                        Context Candidates
+                                             ↓
+                                        ContextAllocator
+                                             ↓
+                                        ContextBuilder
     Deduplication
     Token budget
+                                      Global Budget
+                                            │
+                                            ▼
+                                    ContextAllocator
+                                            │
+                                    allocation budgets
+                                ┌───────────┼───────────┐
+                                ▼           ▼           ▼
+                                Memory        RAG        History
+                                2000         7000         1000
+                                │           │             │
+                                └───────────┼─────────────┘
+                                            ▼
+                                        ContextBuilder
+                                            │
+                                        fit actual items
+                                            ▼
+                                        final context
     Ordering
     Compression
 

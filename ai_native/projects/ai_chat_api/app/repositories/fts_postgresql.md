@@ -15,6 +15,7 @@ plainto_tsquery(...)
 4. ts_rank
 Quan trọng nhất.
 Cho điểm mức độ liên quan.
+
 Tên tôi là Nhất
 ★★★★★
 
