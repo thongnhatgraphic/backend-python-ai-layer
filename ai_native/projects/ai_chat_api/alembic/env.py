@@ -5,7 +5,8 @@ from sqlalchemy import pool
 
 from alembic import context
 from sqlmodel import SQLModel
-from app.models import memory_model
+from app.models.memory_model import MemoryModel
+from app.models.rag_document_model import RagDocumentModel
 from app.core.settings import settings
 
 # this is the Alembic Config object, which provides

@@ -6,6 +6,7 @@ import json
 
 from app.schemas.memory_schema import Memory
 from app.schemas.memory_search_schema import MemorySearchResult
+from app.schemas.retrieval_schema import RetrievalResult
 
 # Postgresql thiết kế query embedding không phải theo cosine similarity.
 # Nó thiết kế theo distance
@@ -55,17 +56,17 @@ class MemoryRepository:
 
     def _to_memory_search_result(self, row) -> MemorySearchResult:
 
-        # embedding = row._mapping["embedding"]
+        embedding = row._mapping["embedding"]
         # print(type(embedding))
         # print(repr(embedding)[:20])
-        # if isinstance(embedding, str):
-        #     embedding = json.loads(embedding)
+        if isinstance(embedding, str):
+            embedding = json.loads(embedding)
 
-        return MemorySearchResult(
+        memory = MemorySearchResult(
             memory=Memory(
                 id=row._mapping["id"],
                 content=row._mapping["content"],
-                # embedding=embedding,
+                embedding=embedding,
                 category=row._mapping["category"],
                 memory_key=row._mapping["memory_key"],
                 cardinality=row._mapping["cardinality"],
@@ -73,6 +74,20 @@ class MemoryRepository:
             ),
             score=row._mapping["score"],
         )
+        print("3. memory.embedding:", memory.memory.embedding is not None)
+        print("4. memory embedding type:", type(memory.memory.embedding))
+
+        result = MemorySearchResult(
+            memory=memory.memory,
+            score=row._mapping["score"],
+        )
+
+        print(
+            "5. result.memory.embedding:",
+            result.memory.embedding is not None,
+        )
+
+        return result
 
     def save(self, user_id: UUID, memories: list[Memory]):
         if not memories:
@@ -235,3 +250,28 @@ class MemoryRepository:
                 user_id = :user_id
                 AND id = ANY(:memory_ids)
         """)
+
+    def search_retrieval(
+        self,
+        query_embedding: list[float],
+        limit: int,
+    ) -> list[RetrievalResult]:
+        statement = text("""
+            SELECT external_id, (1 - (embedding <=> :query_embedding)) AS score
+            FROM rag_documents
+            WHERE embedding IS NOT NULL
+            ORDER BY score DESC
+        """)
+
+        statement = statement.bindparams(
+            bindparam("embedding", type_=Vector(768)),
+        )
+
+        rows = self.session.exec(statement.bindparams(embedding=query_embedding)).all()
+
+        return [
+            RetrievalResult(
+                external_id=row._mapping["external_id"], score=row._mapping["score"]
+            )
+            for row in rows
+        ]

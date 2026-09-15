@@ -26,3 +26,25 @@ class EmbeddingService:
         )
 
         return result.embeddings
+
+    def embed_text(self, text: str) -> list[float]:
+        result = self.client.embed(
+            model=self.model,
+            input=text,
+        )
+        return result.embeddings[0]
+
+    def batch_embed_texts(
+        self,
+        texts: list[str],
+    ) -> list[list[float]]:
+
+        if not texts:
+            return []
+
+        result = self.client.embed(
+            model=self.model,
+            input=texts,
+        )
+
+        return result.embeddings

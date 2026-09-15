@@ -48,7 +48,7 @@ class RerankerService:
                 memory=Memory(
                     id=memory.memory.id,
                     content=memory.memory.content,
-                    # embedding=memory.memory.embedding,
+                    embedding=memory.memory.embedding,
                     category=memory.memory.category,
                     memory_key=memory.memory.memory_key,
                     cardinality=memory.memory.cardinality,

@@ -16,6 +16,16 @@ class Settings(BaseSettings):
     VECTOR_SEARCH_K: int
     RERANKER_LIMIT: int
     RERANKER_THRESHOLD: float
+    OLLAMA_NUM_CTX: int
+    OLLAMA_NUM_PREDICT: int
+    CONTEXT_SAFETY_MARGIN: int
+    TOKENIZER_MODEL: str
+    RAG_HNSW_EF_SEARCH: int
+    RAG_RELEVANCE_THRESHOLD: float
+    CONTEXT_PLANNER_HISTORY_TOKENS: int
+    CONTEXT_MEMORY_MAX_USEFUL_TOKENS: int
+    CONTEXT_RAG_MAX_USEFUL_TOKENS: int
+    CONTEXT_HISTORY_MAX_USEFUL_TOKENS: int
 
     model_config = ConfigDict(env_file=".env", extra="ignore")
 
