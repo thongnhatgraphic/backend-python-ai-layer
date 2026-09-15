@@ -1,8 +1,5 @@
 from fastapi import FastAPI
+from app.routers.chat_router import router
 
 app = FastAPI()
-
-
-@app.get("/")
-async def home():
-    return {"message": "AI Chat API is running"}
+app.include_router(router)
