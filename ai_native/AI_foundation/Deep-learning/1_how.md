@@ -1,3 +1,30 @@
+Artificial Intelligence (AI)
+│
+├── Machine Learning (ML)
+│      │
+│      ├── Decision Tree
+│      ├── SVM
+│      ├── Random Forest
+│      └── ...
+│
+└── Deep Learning (DL)
+       │
+       ├── CNN
+       ├── RNN
+       ├── LSTM
+       ├── GAN
+       └── Transformer
+              │
+              ├── BERT
+              ├── GPT
+              ├── Llama
+              ├── Claude
+              ├── Gemini
+              └── ...
+
+
+
+
 Raw Data
 
 ↓
@@ -52,6 +79,40 @@ Neuron cần biết --> "Mình sai bao nhiêu."
 Vì chỉ khi biết độ lớn của sai số, nó mới biết nên điều chỉnh trọng số mạnh hay nhẹ.
 
 Deep Learning cải thiện bằng cách mô hình tự điều chỉnh weight để tạo ra representation (biểu diễn) tốt hơn.
+
+Ví dụ: Deep Learning xử lý Raw Data → Feature Representation.
+
+👏
+
+Đúng.
+
+Ví dụ.
+
+1. Ảnh. Raw Image
+↓
+CNN.
+↓
+Representation.
+↓
+Dog.
+
+2. Âm thanh.Raw Audio
+↓
+Deep Learning.
+↓
+Representation.
+↓
+Speech
+
+3. Text.
+Raw Text
+↓
+Transformer.
+↓
+Representation.
+↓
+Language Understanding.
+
 
                         AI chỉ biết.
                             Input
@@ -325,3 +386,99 @@ AI Agent
 | Ai dùng Output | Transformer                            |
 | Nếu lỗi        | Transformer hiểu sai ngữ cảnh          |
 | Khi đi làm     | RAG, Vector Database, Semantic Search  |
+
+
+Embedding
+    │
+Self-Attention ✅
+    │
+Residual ✅
+                - Vanishing Gradient tránh mất thông tin ban đầu
+                - bảo toàn thông tin gốc (original representation) trong khi vẫn cho phép mô hình học thêm thông tin từ ngữ cảnh.
+                - Residual Connection không chỉ giúp representation tốt hơn, mà còn giúp việc huấn luyện mô hình sâu trở nên khả thi.
+    │
+LayerNorm ✅
+                - LayerNorm không thêm kiến thức
+                - LayerNorm không làm mất Representation
+                - LayerNorm chuẩn hóa để ổn định việc học, ổn định phân bố/scale
+    │
+Feed Forward Network (FFN) Mạng truyền tiến
+                - Nó nhận Representation -> Học thêm -> Xuất Representation tốt hơn nữa
+                - FFN học đặc trưng của chính token đó.
+                Ví dụ: Redis is a fast database.
+                        Attention.
+                            ↓
+                            Redis học.
+                            Database
+                            Fast
+                            is
+
+                        FFN.
+                            ↓
+                            Suy nghĩ.
+                            À.
+                            Redis là software.
+                            Database.
+                            In-memory.
+                            Cache.
+
+                            Attention.
+                            Tôi nhìn người khác.
+                            FFN.
+                            Tôi tự xử lý bản thân mình.
+
+| Thành phần | Vai trò                                    |
+| ---------- | ------------------------------------------ |
+| Attention  | Trao đổi thông tin giữa các token          |
+| Residual   | Giữ thông tin gốc và bổ sung thông tin mới |
+| LayerNorm  | Chuẩn hóa để việc học ổn định              |
+| FFN        | Xử lý sâu representation của từng token    |
+
+Input Representation
+        │
+        ▼
++--------------------+
+|   Self-Attention   |
++--------------------+
+        │
+        ▼
+Residual
+        │
+        ▼
+LayerNorm
+        │
+        ▼
++--------------------+
+| Feed Forward (FFN) |
++--------------------+
+        │
+        ▼
+Residual
+        │
+        ▼
+LayerNorm
+        │
+        ▼
+Output Representation
+
+---------------------------------------------------------------------
+
+GPT, Llama, Claude... đều được xây bằng cách xếp chồng rất nhiều block như thế này.
+
+Embedding
+     │
+Transformer Block 1
+     │
+Transformer Block 2
+     │
+Transformer Block 3
+     │
+...
+     │
+Transformer Block 32
+     │
+...
+     │
+Transformer Block 80
+     │
+Next Token Prediction
