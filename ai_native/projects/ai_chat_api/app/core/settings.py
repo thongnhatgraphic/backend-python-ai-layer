@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     CONTEXT_MEMORY_MAX_USEFUL_TOKENS: int
     CONTEXT_RAG_MAX_USEFUL_TOKENS: int
     CONTEXT_HISTORY_MAX_USEFUL_TOKENS: int
+    REDIS_URL: str
 
     model_config = ConfigDict(env_file=".env", extra="ignore")
 
