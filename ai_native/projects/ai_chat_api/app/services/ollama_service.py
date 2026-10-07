@@ -1,4 +1,4 @@
-from typing import Literal, TypeVar
+from typing import Literal, TypeVar, Callable
 from ollama import Client
 from pydantic import ValidationError
 
