@@ -85,6 +85,3 @@ Project này sẽ dùng:
         │
         ▼
     PROJECT 1 HARDENING
-        │
-        ▼
-    INTERVIEW + APPLY

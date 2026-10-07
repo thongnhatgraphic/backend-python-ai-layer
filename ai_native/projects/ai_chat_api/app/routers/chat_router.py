@@ -83,7 +83,7 @@ def get_chat_service(
     return chat_service
 
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/", response_model=ChatResponse)
 async def chat(
     request: ChatRequest, llm_service: ChatService = Depends(get_chat_service)
 ) -> ChatResponse:
