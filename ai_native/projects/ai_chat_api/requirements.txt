@@ -42,6 +42,7 @@ langchain-ollama==1.1.0
 langchain-protocol==0.0.19
 langgraph==1.2.12
 langgraph-checkpoint==4.2.0
+langgraph-checkpoint-postgres==3.1.2
 langgraph-prebuilt==1.1.0
 langgraph-sdk==0.4.5
 langsmith==0.14.4
@@ -75,6 +76,7 @@ protobuf==7.35.1
 psutil==7.2.2
 psycopg==3.3.4
 psycopg-binary==3.3.4
+psycopg-pool==3.3.3
 pyarrow==25.0.0
 pydantic==2.13.4
 pydantic-settings==2.14.2
