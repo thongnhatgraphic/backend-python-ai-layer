@@ -17,10 +17,10 @@ all_router = [
         "router": chat_router,
         "prefix": "/chat",
         "tags": ["Chats"],
-    },
-    {
-        "router": agent_router,
-        "prefix": "/agent",
-        "tags": ["Agents"],
-    },
+    }
+    # {
+    #     "router": agent_router,
+    #     "prefix": "/agent",
+    #     "tags": ["Agents"],
+    # },
 ]

@@ -32,6 +32,31 @@ services:
       volumes:
         - redis_data:/data
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    env_file:
+      - .env
+
+    environment:
+      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      REDIS_URL: "redis://:${REDIS_PASSWORD}@redis:6379/0"
+      OLLAMA_HOST: "http://host.docker.internal:11434"
+
+    ports:
+      - "8001:8000"
+
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - hf_cache:/root/.cache/huggingface
 volumes:
   postgres_data:
   redis_data:
+  hf_cache:
+    external: true
+    name: ai_chat_api_hf_cache
+   

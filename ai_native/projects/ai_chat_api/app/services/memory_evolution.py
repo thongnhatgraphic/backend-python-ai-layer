@@ -164,7 +164,7 @@ class MemoryEvolution:
             embedding=memory.embedding,
             limit=5,
         )
-        print("\n\n <--memories--> \n\n", results)
+        print("\n\n <--memories--> \n\n")
         return [result.memory for result in results]
 
     def _decide(
