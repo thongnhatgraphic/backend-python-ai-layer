@@ -3,7 +3,7 @@ from typing_extensions import TypedDict, Annotated, Callable
 from langchain_core.messages import AnyMessage, HumanMessage, AIMessage, ToolMessage
 
 from langchain_core.tools import tool
-from langgraph.prebuilt import ToolNode
+from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.graph.message import add_messages
 from langgraph.graph import StateGraph, START, END
 
@@ -54,7 +54,12 @@ builder.add_node("tools", tool_node)
 
 builder.add_edge(START, "assistant")
 builder.add_conditional_edges(
-    "assistant", should_continue, {"tools": "tools", "end": END}
+    "assistant",
+    tools_condition,
+    {
+        "tools": "tools",
+        "__end__": END,
+    },
 )
 
 builder.add_edge("tools", "assistant")
