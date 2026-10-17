@@ -1,0 +1,5 @@
+
+ai_native_db.dump
+
+# Local test environment; may contain credentials
+.env.test
